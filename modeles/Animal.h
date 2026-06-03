@@ -4,6 +4,15 @@
 #include <vector>
 #include "Mangeoire.h"
 
+// 1. Déclaration anticipée (Forward Declaration)
+class Animal; 
+
+// 2. Maintenant le compilateur sait que "Animal" est une classe
+struct AnimalArgs {
+    Animal* animal;
+    std::vector<Mangeoire>* mangeoires;
+};
+
 /**
  * @brief Represents an animal (Squirrel or Cardinal) in the simulation.
  * @details Manages the animal's life cycle, its food consumption,
@@ -78,6 +87,8 @@ public:
      * @return The number of ticks required to digest.
      */
     int getDigestTime() const;
+
+    static void* thread_func(void* arg);
 };
 
 #endif
