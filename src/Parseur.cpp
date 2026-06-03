@@ -11,7 +11,7 @@ bool Parseur::loadConfiguration(const std::string &filename,
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << Message::FILE_NOT_OPEN << filename << Message::BACKSLASH << std::endl;
-        return false; // Crucial pour arrêter la fonction ici !
+        return false; 
     }
 
     std::string line;
@@ -19,41 +19,60 @@ bool Parseur::loadConfiguration(const std::string &filename,
     int mangeoire_id = 1;
 
     while (std::getline(file, line)) {
-        if (line.empty()) continue; // On saute les lignes vides automatiquement
+        if (line.empty()) continue; 
 
         std::stringstream bufferstring(line);
         char type;
         
-        // 1. On extrait le premier caractère (le type de ligne)
         if (!(bufferstring >> type)) continue; 
 
-        // 2. Traitement si c'est une Mangeoire
+        // 1. Traitement Mangeoire
         if (type == 'M') {
             int volume;
-            // Le volume initial est obligatoire
             if (bufferstring >> volume) {
+                // Validation de la valeur obligatoire
+                if (volume < 0) {
+                    std::cerr << Message::FILE_INVALID_FORMAT << " (Negative volume)" << Message::BACKSLASH;
+                    file.close();
+                    return false;
+                }
+
                 int filling = 0;
                 int counter = 0;
                 
-                // On tente d'extraire les valeurs optionnelles.
-                // Si la ligne s'arrête avant, elles restent à 0.
                 bufferstring >> filling;
                 bufferstring >> counter;
 
-                // Ajout au vecteur (le constructeur gère le reste)
+                // Validation des valeurs optionnelles
+                if (filling < 0 || counter < 0) {
+                    std::cerr << Message::FILE_INVALID_FORMAT << " (Negative refill values)" << Message::BACKSLASH;
+                    file.close();
+                    return false;
+                }
+
                 mangeoires.push_back(Mangeoire(mangeoire_id++, volume, filling, counter));
             } else {
                 std::cerr << Message::FILE_INVALID_FORMAT << Message::BACKSLASH;
+                file.close();
+                return false;
             }
         }
-        // 3. Traitement si c'est un Animal (Écureuil ou Cardinal)
+        // 2. Traitement Animal
         else if (type == 'E' || type == 'C') {
             int portion, digest_time;
-            // Pour les animaux, tous les paramètres sont obligatoires
             if (bufferstring >> portion >> digest_time) {
+                // Validation des valeurs de l'animal
+                if (portion < 0 || digest_time < 0) {
+                    std::cerr << Message::FILE_INVALID_FORMAT << " (Negative animal values)" << Message::BACKSLASH;
+                    file.close();
+                    return false;
+                }
+
                 animaux.push_back(Animal(animal_id++, type, portion, digest_time));
             } else {
                 std::cerr << Message::FILE_INVALID_FORMAT << Message::BACKSLASH;
+                file.close();
+                return false;
             }
         }
     }
