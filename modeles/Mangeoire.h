@@ -3,6 +3,12 @@
 
 #include <pthread.h>
 
+class Mangeoire;
+
+struct MangeoireArgs {
+    Mangeoire* mangeoire;
+};
+
 /**
  * @brief Represents a feeder (Mangeoire) containing food for the animals.
  * @details Manages the available seed volume, handles concurrent consumption 
@@ -44,6 +50,12 @@ public:
      * @return true if the full quantity was successfully consumed, false if there wasn't enough food.
      */
     bool consume(int quantity);
+
+    void refill();
+
+    static void* thread_func(void* arg);
+
+    
 
     /**
      * @brief Updates the feeder's refill timer at each clock tick.
