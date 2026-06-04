@@ -5,26 +5,27 @@
 
 class Mangeoire;
 
-struct MangeoireArgs {
-    Mangeoire* mangeoire;
+struct MangeoireArgs
+{
+    Mangeoire *mangeoire;
 };
 
 /**
  * @brief Represents a feeder (Mangeoire) containing food for the animals.
- * @details Manages the available seed volume, handles concurrent consumption 
- * from multiple animal threads using a mutex, and controls the automatic 
+ * @details Manages the available seed volume, handles concurrent consumption
+ * from multiple animal threads using a mutex, and controls the automatic
  * refilling logic at specific time intervals.
  */
 class Mangeoire
 {
 private:
     /* data */
-    int id;                         ///< Unique feeder identifier
-    int volume;                     ///< Current volume of seeds available
-    int filling;                    ///< Amount of seeds added during a refill
-    int counter;                    ///< Refill time interval (in ticks)
-    int filling_timer;              ///< Internal countdown timer until the next refill
-    pthread_mutex_t volume_mutex;   ///< Mutex protecting the volume from race conditions
+    int id;                       ///< Unique feeder identifier
+    int volume;                   ///< Current volume of seeds available
+    int filling;                  ///< Amount of seeds added during a refill
+    int counter;                  ///< Refill time interval (in ticks)
+    int filling_timer;            ///< Internal countdown timer until the next refill
+    pthread_mutex_t volume_mutex; ///< Mutex protecting the volume from race conditions
 
 public:
     /**
@@ -44,25 +45,28 @@ public:
 
     /**
      * @brief Securely consumes a specific quantity of seeds from the feeder.
-     * @details This method is thread-safe. It locks the internal mutex, verifies 
+     * @details This method is thread-safe. It locks the internal mutex, verifies
      * if enough seeds are available, decrements the volume if successful, and unlocks.
      * @param quantity The number of seeds the animal wants to eat.
      * @return true if the full quantity was successfully consumed, false if there wasn't enough food.
      */
     bool consume(int quantity);
 
+    /**
+     * @brief Manages the timer update logic and the refill process.
+     * @details Called autonomously at each tick by the feeder thread. It decrements
+     * the filling_timer, refills it when it reaches 0, and restarts the cycle at the next tick.
+     */
     void refill();
 
-    static void* thread_func(void* arg);
-
-    
-
     /**
-     * @brief Updates the feeder's refill timer at each clock tick.
-     * @details Decrements the `filling_timer`. When it reaches zero, the feeder 
-     * checks if it needs to trigger the refill logic to add `filling` seeds.
+     * @brief Feeder thread entry function (static method).
+     * @details Aligns feeder execution to clock pulses via a conditional variable.
+     * Executes the refill() method on each wake-up while the simulation is active.
+     * @param arg Opaque pointer to a FeederArgs structure.
+     * @return nullptr at the end of thread execution.
      */
-    void update();
+    static void *thread_func(void *arg);
 
     /**
      * @brief Gets the unique identifier of the feeder.
