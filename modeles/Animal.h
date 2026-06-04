@@ -93,7 +93,6 @@ public:
      */
     int getDigestTime() const;
 
-    static void* thread_func(void* arg);
 };
 
 #endif
