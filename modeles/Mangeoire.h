@@ -5,9 +5,13 @@
 
 class Mangeoire;
 
+/**
+ * @struct MangeoireArgs
+ * @brief Structure encapsulating the arguments passed to the feeder thread.
+ */
 struct MangeoireArgs
 {
-    Mangeoire *mangeoire;
+    Mangeoire *mangeoire;   ///< Pointer to the feeder instance to execute
 };
 
 /**
