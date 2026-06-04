@@ -61,8 +61,6 @@ void* Animal::thread_func(void* arg) {
     AnimalArgs* args = static_cast<AnimalArgs*>(arg);
     Animal* self = args->animal;
     std::vector<Mangeoire>& mangeoires = *(args->mangeoires);
-
-    // Mémoire locale du thread : au début, il n'a traité aucun tic
     int last_processed_tick = 0;
 
     while (self->isAlive() && active_simulation) {
