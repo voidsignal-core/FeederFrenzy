@@ -1,8 +1,5 @@
 #include "modeles/Mangeoire.h"
 
-
-#include <iostream>
-
 // Liens avec les variables globales de synchronisation de l'horloge
 extern pthread_mutex_t clock_mutex;
 extern pthread_cond_t clock_cond;
@@ -10,7 +7,7 @@ extern volatile bool active_simulation;
 extern volatile int current_sim_tick;
 
 Mangeoire::Mangeoire(int id, int volume, int filling, int counter)
-    : id(id), volume(volume), filling(filling), counter(counter), filling_timer(counter) {
+    : id(id), volume(volume), filling(filling), counter(counter), filling_timer(counter), refill_count(0) {
     pthread_mutex_init(&volume_mutex, NULL);
 }
 
@@ -26,6 +23,7 @@ int Mangeoire::getId() const { return id; }
 int Mangeoire::getVolume() const { return volume; }
 int Mangeoire::getFilling() const { return filling; }
 int Mangeoire::getCounter() const { return counter; }
+int Mangeoire::getRefillCount() const { return refill_count; }
 
 //---------------------
 // MÉTHODES PRINCIPALES
@@ -62,6 +60,7 @@ void Mangeoire::refill() {
         // Déclenchement de la recharge au passage à 0
         if (filling_timer == 0) {
             volume += filling;
+            refill_count++;
         } 
         // Réamorçage du timer au tic suivant la recharge
         else if (filling_timer < 0) {

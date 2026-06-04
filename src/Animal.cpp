@@ -1,5 +1,4 @@
 #include "modeles/Animal.h"
-#include <iostream>
 #include <random>
 
 // Liens avec les variables globales de synchronisation de l'horloge
@@ -9,7 +8,8 @@ extern volatile bool active_simulation;
 extern volatile int current_sim_tick;
 
 Animal::Animal(int id, char type, int portion, int digest_time)
-    : id(id), type(type), alive(true), portion(portion), digest_time(digest_time), digest_timer(0) {}
+    : id(id), type(type), alive(true), portion(portion), digest_time(digest_time), digest_timer(0)
+    , total_eaten(0), meals_count(0) {}
 
 Animal::~Animal() {}
 
@@ -22,6 +22,8 @@ char Animal::getType() const { return type; }
 int Animal::getPortion() const { return portion; }
 int Animal::getDigestTime() const { return digest_time; }
 bool Animal::isAlive() const { return alive; }
+int Animal::getTotalEaten() const { return total_eaten; }
+int Animal::getMealsCount() const { return meals_count; }
 
 //---------------------
 // MÉTHODES PRINCIPALES
@@ -52,9 +54,11 @@ void Animal::consume(std::vector<Mangeoire> &feeders) {
     
     if (eaten) {
         digest_timer = digest_time; // Début de la digestion
+        total_eaten++;
     } else {
         alive = false; 
     }
+    meals_count++;
 }
 
 void* Animal::thread_func(void* arg) {
