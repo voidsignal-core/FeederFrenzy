@@ -1,0 +1,11 @@
+# Déclaration de 2 mangeoires différentes
+M 80 20 5
+M 120 40 8
+M 240 80 16
+M 480 160 32
+
+# Animaux (Format d'origine : Espèce portion digestion)
+E 10 4
+C 5 2
+E 15 6
+C 8 3
