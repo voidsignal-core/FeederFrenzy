@@ -31,6 +31,9 @@ private:
     int filling_timer;            ///< Internal countdown timer until the next refill
     pthread_mutex_t volume_mutex; ///< Mutex protecting the volume from race conditions
 
+    /* statistics data */
+    int refill_count;              ///< Total number of refills performed
+
 public:
     /**
      * @brief Constructor for the Mangeoire class with optional parameters.
@@ -95,6 +98,12 @@ public:
      * @return The total number of ticks between refills.
      */
     int getCounter() const;
+
+    /**
+     * @brief Gets the total number of refills performed by this feeder.
+     * @return The count of refills executed during the simulation.
+     */
+    int getRefillCount() const;
 };
 
 #endif

@@ -31,6 +31,10 @@ private:
     int digest_time;  ///< Digestion duration required after a meal (in ticks)
     int digest_timer; ///< Internal countdown timer for digestion
 
+    /* statistics data */
+    int total_eaten;     ///< Total number of meals successfully consumed
+    int meals_count;     ///< Total number of meal attempts (successful or not)
+
 public:
     /**
      * @brief Constructor for the Animal class.
@@ -92,6 +96,18 @@ public:
      * @return The number of ticks required to digest.
      */
     int getDigestTime() const;
+
+    /**
+     * @brief Gets the total number of meals successfully consumed by the animal.
+     * @return The count of successful meals.
+     */
+    int getTotalEaten() const;
+
+    /**
+     * @brief Gets the total number of meal attempts made by the animal.
+     * @return The count of meal attempts.
+     */
+    int getMealsCount() const;
 
 };
 
