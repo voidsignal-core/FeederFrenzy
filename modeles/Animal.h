@@ -4,13 +4,15 @@
 #include <vector>
 #include "Mangeoire.h"
 
-// 1. Déclaration anticipée (Forward Declaration)
 class Animal; 
 
-// 2. Maintenant le compilateur sait que "Animal" est une classe
+/**
+ * @struct AnimalArgs
+ * @brief Structure encapsulating the arguments passed to the animal thread.
+ */
 struct AnimalArgs {
-    Animal* animal;
-    std::vector<Mangeoire>* mangeoires;
+    Animal* animal;                     ///< Pointer to the animal instance.
+    std::vector<Mangeoire>* mangeoires; ///< Pointer to the vector of feeders for the animal to access.
 };
 
 /**
@@ -53,10 +55,13 @@ public:
     void consume(std::vector<Mangeoire> &feeders);
 
     /**
-     * @brief Updates the animal's time cycle at each clock tick.
-     * @details Decrements the internal `digest_timer` if the animal is currently digesting.
+     * @brief Animal thread entry function (static method).
+     * @details Aligns the animal's execution to the clock pulses via a conditional variable (`pthread_cond_wait`). 
+     * As long as the simulation is active and the animal is alive, it executes its `consume()` method.
+     * @param arg Opaque pointer to an AnimalArgs structure.
+     * @return nullptr at the end of thread execution.
      */
-    void update();
+    static void* thread_func(void* arg);
 
     /**
      * @brief Checks if the animal is still alive.
