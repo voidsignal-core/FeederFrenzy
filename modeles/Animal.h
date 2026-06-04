@@ -26,7 +26,7 @@ private:
     /* data */
     int id;           ///< Unique animal identifier
     char type;        ///< 'E' for Squirrel (Écureuil), 'C' for Cardinal
-    bool alive;       ///< Life state (true = alive, false = dead)
+    volatile bool alive;       ///< Life state (true = alive, false = dead)
     int portion;      ///< Amount of seeds consumed per meal
     int digest_time;  ///< Digestion duration required after a meal (in ticks)
     int digest_timer; ///< Internal countdown timer for digestion
