@@ -3,11 +3,11 @@
 
 #include <iostream>
 
-// On lie les variables globales nécessaires à la synchronisation
+// Liens avec les variables globales de synchronisation de l'horloge
 extern pthread_mutex_t clock_mutex;
 extern pthread_cond_t clock_cond;
 extern volatile bool active_simulation;
-extern volatile int current_sim_tick; // Compteur de tic global
+extern volatile int current_sim_tick;
 
 Mangeoire::Mangeoire(int id, int volume, int filling, int counter)
     : id(id), volume(volume), filling(filling), counter(counter), filling_timer(counter) {
@@ -34,10 +34,8 @@ int Mangeoire::getCounter() const { return counter; }
 bool Mangeoire::consume(int quantity) {
     pthread_mutex_lock(&volume_mutex);
 
-    // RÈGLE TRAGIQUE : Si le filling_timer est à 0, la mangeoire est en plein refill.
-    // L'accès est coupé, la méthode renvoie false et l'animal va mourir.
+    // RÈGLE STRICTE : Si le timer est à 0, la mangeoire est en plein refill. Accès refusé.
     if (counter > 0 && filling_timer == 0) {
-        std::cout << "  [MANGEOIRE " << id << "] ACCÈS REFUSÉ (Remplissage en cours) !" << std::endl;
         pthread_mutex_unlock(&volume_mutex);
         return false; 
     }
@@ -47,49 +45,43 @@ bool Mangeoire::consume(int quantity) {
     if (volume >= quantity) {
         volume -= quantity;
         success = true;
-    } else {
-        std::cout << "  [MANGEOIRE " << id << "] Vide ou insuffisante pour la portion demandée." << std::endl;
     }
 
     pthread_mutex_unlock(&volume_mutex);
     return success;
 }
-void Mangeoire::update() {}
 
 void Mangeoire::refill() {
-    // 1. Si filling == 0 → On ne fait jamais de refill
-    if (filling == 0) return; 
+    if (filling == 0) return; // Aucun remplissage configuré
 
     pthread_mutex_lock(&volume_mutex);
 
-    // 2. Si counter > 0 → On décrémente et on gère le cycle
     if (counter > 0) {
         filling_timer--;
 
-        // C'est le moment du refill : on augmente le volume et on bloque l'accès
+        // Déclenchement de la recharge au passage à 0
         if (filling_timer == 0) {
             volume += filling;
-            std::cout << "[MANGEOIRE " << id << "] ⚙️ RECHARGE ! +" << filling 
-                      << " graines. Accès VERROUILLÉ pour ce tic. Volume actuel : " << volume << std::endl;
         } 
-        // Le tic de blocage est passé, on reset le timer pour le prochain cycle
+        // Réamorçage du timer au tic suivant la recharge
         else if (filling_timer < 0) {
-            filling_timer = counter; // Le tic actuel compte déjà pour -1 dans le nouveau cycle
+            filling_timer = counter;
         }
     }
 
     pthread_mutex_unlock(&volume_mutex);
 }
 
+
 void* Mangeoire::thread_func(void* arg) {
     MangeoireArgs* args = static_cast<MangeoireArgs*>(arg);
     Mangeoire* self = args->mangeoire;
-
     int last_processed_tick = 0;
 
     while (active_simulation) {
         pthread_mutex_lock(&clock_mutex);
 
+        // Barrière de synchronisation pour éviter les réveils spurieux
         while (current_sim_tick == last_processed_tick && active_simulation) {
             pthread_cond_wait(&clock_cond, &clock_mutex);
         }
@@ -99,12 +91,11 @@ void* Mangeoire::thread_func(void* arg) {
             break;
         }
 
+        // On mémorise qu'on est en train de traiter ce tic
         last_processed_tick = current_sim_tick;
-
         pthread_mutex_unlock(&clock_mutex);
 
-
-        // On exécute la logique de recharge autonome
+        // Traitement autonome de la recharge
         if (active_simulation) {
             self->refill();
         }
